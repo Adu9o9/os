@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct MemoryBlock {
+    int is_free;
+    int size;
+    int prosize;
+    struct MemoryBlock *next;
+}typedef mb;
+mb *head=NULL;
+mb *CreateBlock(int size){
+    mb *block=(mb*)malloc(sizeof(mb));
+    block->size=size;
+    block->prosize=0;
+    block->is_free=1;//free 0 otherwise
+    if(head==NULL){
+        head=block;
+        }
+    else{
+        mb *temp=head;
+        while(temp->next!=NULL){        
+            temp=temp->next;
+            }
+        temp->next=block;
+    }
+    return block;
+            
+}
+int allocatemem(int psize){
+    mb *current_block=head;
+    while(current_block){
+        if(current_block->is_free && current_block->size>=psize){
+            current_block->is_free=0;
+            current_block->prosize=psize;
+            return 1;
+        }
+        else if(!current_block->is_free && (current_block->size - current_block->prosize)>=psize){
+            current_block->prosize+=psize;
+            return 1;
+        }
+            current_block=current_block->next;
+        
+    }
+    return 0;
+}
+void printMemoryStatus(){
+    mb *current=head;
+    while(current){
+        printf("Memory size:%d , Process Size:%d , status:%s \n",current->size,current->prosize,(current->is_free?"free":"allocated"));
+        current=current->next;
+    }
+}
+int main(){
+    CreateBlock(500);
+    CreateBlock(300);
+    CreateBlock(100);
+    CreateBlock(200);
+    printMemoryStatus();
+    int ch,size;
+    do{
+        printf("\n --Menu--\n1.Allocate\n2.PrintMemoryStatus\n3.Exit\n");
+        printf("Enter choice:");
+        scanf("%d",&ch);
+        switch(ch){
+            case 1:
+                printf("Enter process size:");
+                scanf("%d",&size);
+                if(allocatemem(size)){
+                    printf("successfully allocated!");
+                    }
+                else{
+                    printf("insufficient memory");
+                    exit(0);
+                }
+                printf("status after allocation\n");
+                printMemoryStatus();
+                break;
+            case 2:
+                printf("Current status");
+                printMemoryStatus();
+                break;
+            case 3:
+                exit(0);
+            }
+        }while(ch!=3);
+    return 0;
+}
+1 Start  
+2 Define structure MemoryBlock with attributes: is_free, size, prosize, next  
+3 Initialize head as NULL  
+4 Define CreateBlock(size)  
+  4.1 Allocate memory for new block  
+  4.2 Set block->size = size, block->prosize = 0, block->is_free = 1  
+  4.3 If head is NULL, set head = block  
+  4.4 Else traverse list and append block at end  
+  4.5 Return block  
+5 Define allocatemem(psize)  
+  5.1 Traverse memory blocks  
+  5.2 If block is free and size >= psize, allocate memory, update prosize, return success  
+  5.3 Else if block is allocated but has enough free space, update prosize, return success  
+  5.4 If no suitable block found, return failure  
+6 Define printMemoryStatus()  
+  6.1 Traverse blocks and print size, prosize, and status  
+7 Define main()  
+  7.1 Create memory blocks (500, 300, 100, 200)  
+  7.2 Print initial memory status  
+  7.3 Menu-driven program  
+    7.3.1 Case 1: Allocate memory and print status  
+    7.3.2 Case 2: Print memory status  
+    7.3.3 Case 3: Exit  
+8 Stop  
