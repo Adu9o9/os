@@ -1,0 +1,57 @@
+#include <stdio.h>
+#define MAX 100
+int pagehit(int frames[],int f,int page){
+    for(int i=0;i<f;i++){
+        if(frames[i]==page){
+            return 1;//page hit
+        }
+       
+    }
+     return 0;//page fault
+}
+void printframes(int frames[],int f){
+    printf("Frame: ");
+    for(int i=0;i<f;i++){
+        if(frames[i]!=-1){
+            printf("%d ",frames[i]);
+        }
+        else{
+            printf("- ");
+        }
+    }
+    printf("\n");
+}
+void FIFO(int pages[],int n,int f){
+    int frames[f];
+    int front=0,pgfaults=0;
+    for(int i=0;i<f;i++){
+        frames[i]=-1;
+    }
+    for(int i=0;i<n;i++){
+        if(!pagehit(frames,f,pages[i])){
+            frames[front]=pages[i];
+            front=(front+1)%f;
+            pgfaults++;
+            printframes(frames,f);
+        }
+        else{
+            printf("Page %d ->Hit\n",pages[i]);
+        }
+    }
+    printf("Total Page Faults=%d\n",pgfaults);
+    
+}
+int main(){
+    int n,f;
+    int pages[MAX];
+    printf("enter page refernce no");
+    scanf("%d",&n);
+    printf("enter pages:\n");
+    for(int i=0;i<n;i++){
+        scanf("%d",&pages[i]);
+    }
+    printf("Enter frame size");
+    scanf("%d",&f);
+    FIFO(pages,n,f);
+    return 0;
+}
