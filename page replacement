@@ -154,3 +154,108 @@ int main(){
     LRU(pages, n, f);
     return 0;
 }
+//opr
+#include <stdio.h>
+#include <limits.h>
+#define MAX 100
+
+int predict(int pages[],int frames[],int n,int index, int f){
+    int res=-1,farthest=index;
+    for(int i=0;i<f;i++){
+        int j;
+        for(j=index;j<n;j++){
+            if(frames[i]==pages[j]){
+                if(j>farthest){
+                    farthest=j;
+                    res=i;
+                }
+                break;
+            }
+        }
+        if(j==n){
+            return i;
+        }
+        
+    }
+    return (res==-1)? 0:res;
+}
+
+void printframes(int frames[], int f){
+    printf("Frame: ");
+    for(int i = 0; i < f; i++){
+        if(frames[i] != -1){
+            printf("%d ", frames[i]);
+        }
+        else{
+            printf("- ");
+        }
+    }
+    printf("\n");
+}
+
+void OPR(int pages[], int n, int f){
+    int frames[f], pgfaults = 0;
+
+    for(int i = 0; i < f; i++){
+        frames[i] = -1;
+    }
+
+    for(int i = 0; i < n; i++){
+        int flag = 0;
+
+        // Check if page is already in frame (Hit)
+        for(int j = 0; j < f; j++){
+            if(frames[j] == pages[i]){
+                flag = 1;
+                printf("Page %d -> Hit\n", pages[i]);  // ✅ Fixed incorrect print format
+                break;
+            }
+        }
+
+        // If page is not found (Page Fault)
+        if(!flag){
+            int pos = -1;
+
+            // Find empty frame
+            for(int j = 0; j < f; j++){
+                if(frames[j] == -1){
+                    pos = j;
+                    break;
+                }
+            }
+
+            // If no empty frame, replace least recently used page
+            if(pos == -1){
+                pos = predict(pages,frames,n,i+1,f);
+            }
+
+            frames[pos] = pages[i];
+            pgfaults++;
+
+            // ✅ Ensure proper frame print formatting
+            printf("Page %d -> ", pages[i]);
+            printframes(frames, f);
+        }
+    }
+
+    printf("Total Page Faults (LRU): %d\n", pgfaults);
+}
+
+int main(){
+    int n, f;
+    int pages[MAX];
+
+    printf("Enter number of page references: ");
+    scanf("%d", &n);
+
+    printf("Enter reference string: ");
+    for(int i = 0; i < n; i++){
+        scanf("%d", &pages[i]);
+    }
+
+    printf("Enter frame size: ");
+    scanf("%d", &f);
+
+    OPR(pages, n, f);
+    return 0;
+}
