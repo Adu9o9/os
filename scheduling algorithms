@@ -66,92 +66,84 @@ int main(){
 //sjf
 
 #include <stdio.h>
-typedef struct{
+#include <limits.h>
+typedef struct Process{
     int name;
-    int arrival;
-    int burst;
-    int waiting;
-    int completion;
-    int turnaround;
-    int executed;
-}Process;
-void swap(Process *a, Process *b) {
-    Process temp = *a;
-    *a = *b;
-    *b = temp;
+    int at;
+    int bt;
+    int ct;
+    int tat;
+    int wt;
+    int done;
+}P;
+void swap(P *a, P *b){
+    P temp=*a;
+    *a=*b;
+    *b=temp;
 }
-
-// Function to sort processes by arrival time
-void sortByArrival(Process processes[], int n) {
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
-            if (processes[j].arrival > processes[j + 1].arrival) {
-                swap(&processes[j], &processes[j + 1]);
+void sortbyA(P process[],int n){
+    for(int i=0;i<n-1;i++){
+        for(int j=0;j<n-i-1;j++){
+            if(process[j].at>process[j+1].at){
+                swap(&process[j],&process[j+1]);
             }
         }
     }
 }
-int findShortestJob(Process processes[], int n, int current_time) {
-    int min_burst = __INT_MAX__;
-    int index = -1;
-    for (int i = 0; i < n; i++) {
-        if (!processes[i].executed && processes[i].arrival <= current_time) {
-            if (processes[i].burst < min_burst) {
-                min_burst = processes[i].burst;
-                index = i;
-            }
-        }
-    }
-    return index; // Returns index of the shortest available process
-}
-
 int main(){
-    Process processes[]={
-        {1,2,1},
-        {2,1,5},
-        {3,4,1},
-        {4,0,6},
-        {5,2,3},
-    };
-int n= sizeof(processes)/sizeof(Process);
-sortByArrival(processes, n);
-int current_time=0;
-int completed = 0;
-printf("Completion Time | Process\n");
-while (completed < n) {
-        int index = findShortestJob(processes, n, current_time);
-
-        // If no process is available, CPU is idle
-        if (index == -1) {
-            printf("%-5d | IDLE\n", current_time + 1);
-            current_time++;
-            continue;
+    int n;
+    printf("enter no.of process");
+    scanf("%d",&n);
+    printf("enter name,at,bt");
+    P process[n];
+    for(int i=0;i<n;i++){
+        scanf("%d%d%d",&process[i].name,&process[i].at,&process[i].bt);
+        process[i].done=0;
+    }
+    sortbyA(process,n);
+    int time=0,completed=0;
+    float avgtat=0.0,avgwt=0.0;
+    printf("Gantt chart:");
+    while(completed<n){
+        int indx=-1;
+        int min_bt=INT_MAX;
+        for(int i=0;i<n;i++){
+            if(process[i].at<=time && !process[i].done && process[i].bt<min_bt){
+                min_bt=process[i].bt;
+                indx=i;
+            }
         }
-    int execution_time=processes[index].burst;    
-    current_time+=execution_time;
-    printf("%-5d | P%d \n",current_time,processes[index].name);
-    processes[index].completion=current_time;
-    processes[index].turnaround=processes[index].completion-processes[index].arrival;
-    processes[index].waiting=processes[index].turnaround-processes[index].burst;
-    processes[index].executed = 1;
+        if(indx!=-1){
+             printf("P%d\t",process[indx].name);
+        time+=process[indx].bt;
+        process[indx].ct=time;
+        process[indx].tat=process[indx].ct-process[indx].at;
+        process[indx].wt=process[indx].tat-process[indx].bt;
+        avgtat+=process[indx].tat;
+        avgwt+=process[indx].wt;
+        process[indx].done=1;
         completed++;
+        }
+       else{
+           printf("IDLE\t");
+           time++;
+       }
+       
         
+    
+    }
         
+    printf("\n");
+    printf("Process\tAT\tBT\tCT\tTAT\tWT\n");
+    for(int i=0;i<n;i++){
+        printf("P%d\t%d\t%d\t%d\t%d\t%d\t\n",process[i].name,process[i].at,process[i].bt,process[i].ct,process[i].tat,process[i].wt);
+        
+    }
+    printf("Averagae turnaround time=%.2f",avgtat/n);
+    printf("Average waiting time=%.2f",avgwt/n);
+    
+    return 0;
 }
-float avgwt=0.0;
-float avgtat=0.0;
-printf("Process%10s%10s%15s%20s\n", "ArrivalTime", "BurstTime", "TurnaroundTime", "WaitingTime");
-for(int i=0;i<n;i++){
-    printf("P%d%10d%10d%15d%20d\n", processes[i].name, processes[i].arrival, processes[i].burst, processes[i].turnaround, processes[i].waiting);
-    avgwt+=processes[i].waiting;
-    avgtat+=processes[i].turnaround;
-}
-printf("Average Turnaround Time:%f\n",avgtat/n);
-printf("Average Waiting Time:%f\n",avgwt/n);
-
-return 0;
-}
-
 //prioriy
 
 #include <stdio.h>
