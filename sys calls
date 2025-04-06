@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+int main(){
+    pid_t pid=fork();
+    if(pid<0){
+        perror("fork failed");
+    }
+    else if(pid==0){
+        printf("child process executing the -ls command\n");
+        printf("Child process:%d\n",getpid());
+        printf("Parent:%d\n",getppid());
+        
+        execlp("/bin/date","date",NULL);
+        
+        perror("execlp fails");
+        exit(1);
+    }
+    else{
+        wait(NULL);
+        printf("Parents process executing\n");
+        printf("Parent process:%d\n",getpid());
+        printf("Child:%d\n",pid);
+    }
+}
