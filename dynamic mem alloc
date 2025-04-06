@@ -167,14 +167,10 @@ int allocatemem(int psize) {
       
         if (bestfit_block->is_free) {
             bestfit_block->is_free = 0;
-            bestfit_block->prosize = psize;
+            bestfit_block->prosize += psize;
             return 1;
         }
-        // If the block is partially allocated but has enough remaining space
-        else if (bestfit_block->size - bestfit_block->prosize >= psize) {
-            bestfit_block->prosize += psize; // Use the remaining space in the block
-            return 1;
-        }
+        
     }
 
     // Step 3: If no suitable block is found, return 0
