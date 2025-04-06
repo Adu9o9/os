@@ -237,85 +237,70 @@ int main(){
 
 #include <stdio.h>
 
-typedef struct {
+typedef struct Process{
     int name;
-    int priority;
-    int burst;
-    int arrival;
-    int waiting;
-    int completion;
-    int turnaround;
-    int executed; // Flag to track execution
-} Process;
+    int pri;
+    int at;
+    int bt;
+    int ct;
+    int tat;
+    int wt;
+    int completed;
+} P;
+int main(){
+    P process[] = {
+        {1, 3, 0, 8},
+        {2, 4, 1, 2},
+        {3, 4, 3, 4},
+        {4, 5, 4, 1},
+        {5, 2, 5, 6},
+        {6, 6, 6, 5},
+        {7, 1, 10, 1}};
+    int n = sizeof(process) / sizeof(process[0]);
+    
+    int time = 0,completed=0;
+    float avgtat = 0.0, avgwt = 0.0;
+    printf("\nGantt Chart | Process\n");
+    while(completed<n){
+        int highest = -1;
+        int maxpri = 999;
+        for (int i = 0; i < n; i++)
+        {
+            if (process[i].at<=time && !process[i].completed)
+            {
+                if(process[i].pri<maxpri || 
+                (process[i].pri==maxpri && process[i].at<process[highest].at)){
+                    highest = i;
+                    maxpri = process[i].pri;
 
-// Swap function for sorting
-void swap(Process *a, Process *b) {
-    Process temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-// Function to sort by arrival time and priority (Lower priority value = Higher priority)
-void sortByArrivalAndPriority(Process processes[], int n) {
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
-            if (processes[j].arrival > processes[j + 1].arrival || 
-               (processes[j].arrival == processes[j + 1].arrival && processes[j].priority > processes[j + 1].priority)) {
-                swap(&processes[j], &processes[j + 1]);
+                }
             }
         }
-    }
+        if(highest==-1){
+                printf("IDLE\t");
+                time = process[highest].at;
+            }
+        else{
+            
+        printf("P%d\t", process[highest].name);
+        time += process[highest].bt;
+        process[highest].ct = time;
+        process[highest].tat = process[highest].ct - process[highest].at;
+        process[highest].wt = process[highest].tat - process[highest].bt;
+        process[highest].completed = 1;
+        completed++;
+        avgtat += process[highest].tat;
+        avgwt += process[ highest].wt;
 }
-
-// Priority Scheduling Function (Non-preemptive)
-void priorityScheduling(Process processes[], int n) {
-    int current_time = 0;
-    float avgWT = 0.0, avgTAT = 0.0;
-
-    // Sort processes based on Arrival and Priority
-    sortByArrivalAndPriority(processes, n);
-
-    printf("Completion Time | Process\n");
-
-    for (int i = 0; i < n; i++) {
-        // If current time is less than process arrival, CPU is idle
-        if (current_time < processes[i].arrival) {
-            printf("%-5d | IDLE\n", processes[i].arrival);
-            current_time = processes[i].arrival; // Move to the process arrival time
-        }
-
-        // Execute the process
-        current_time += processes[i].burst;
-        processes[i].completion = current_time;
-        processes[i].turnaround = processes[i].completion - processes[i].arrival;
-        processes[i].waiting = processes[i].turnaround - processes[i].burst;
-
-        printf("%-5d | P%d \n", current_time, processes[i].name);
-    }
-
-    // Print final results
-    printf("\nProcess%10s%10s%10s%15s%20s\n", "Priority", "Arrival", "Burst", "Turnaround", "Waiting");
-    for (int i = 0; i < n; i++) {
-        printf("P%d%10d%10d%10d%15d%20d\n", processes[i].name, processes[i].priority, processes[i].arrival, processes[i].burst, processes[i].turnaround, processes[i].waiting);
-        avgWT += processes[i].waiting;
-        avgTAT += processes[i].turnaround;
-    }
-
-    printf("Average Turnaround Time: %.2f\n", avgTAT / n);
-    printf("Average Waiting Time: %.2f\n", avgWT / n);
 }
+printf("\n");
+printf("Process\tAT\tBT\tCT\tTAT\tWT\n");
+for (int i = 0; i < n;i++){
+    printf("P%d\t%d\t%d\t%d\t%d\t%d\n", process[i].name, process[i].at, process[i].bt, process[i].ct, process[i].tat, process[i].wt);
 
-// Main function
-int main() {
-    Process processes[] = {
-        {1, 1, 4, 0},
-        {2, 2, 3, 0},
-        {3, 1, 7, 6},
-        {4, 2, 2, 11},
-        {5, 3, 4, 12},
-    };
+}
+printf("Average Turnaround Time: %f\n", avgtat / n);
+printf("Average Waiting Time: %f\n", avgwt / n);
 
-    int n = sizeof(processes) / sizeof(Process);
-    priorityScheduling(processes, n);
-    return 0;
+return 0;
 }
