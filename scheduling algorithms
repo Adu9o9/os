@@ -236,7 +236,7 @@ int main(){
 //prioriy
 
 #include <stdio.h>
-
+#inlcue <limits.h>
 typedef struct Process{
     int name;
     int pri;
@@ -262,36 +262,36 @@ int main(){
     float avgtat = 0.0, avgwt = 0.0;
     printf("\nGantt Chart | Process\n");
     while(completed<n){
-        int highest = -1;
-        int maxpri = 999;
+        int indx = -1;
+        int maxpri = INT_MAX;
         for (int i = 0; i < n; i++)
         {
             if (process[i].at<=time && !process[i].completed)
             {
                 if(process[i].pri<maxpri || 
-                (process[i].pri==maxpri && process[i].at<process[highest].at)){
+                (process[i].pri==maxpri && process[i].at<process[indx].at) ||
+                (process[i].pri==maxpri && process[i].at==process[indx].at && process[i].name < process[indx].namee)){
                     highest = i;
                     maxpri = process[i].pri;
 
                 }
             }
         }
-        if(highest==-1){
-                printf("IDLE\t");
-                time = process[highest].at;
-            }
-        else{
+        if(indx!=-1){
             
-        printf("P%d\t", process[highest].name);
-        time += process[highest].bt;
-        process[highest].ct = time;
-        process[highest].tat = process[highest].ct - process[highest].at;
-        process[highest].wt = process[highest].tat - process[highest].bt;
-        process[highest].completed = 1;
+        printf("P%d\t", process[indx].name);
+        time += process[indx].bt;
+        process[indx].ct = time;
+        process[indx].tat = process[indx].ct - process[indx].at;
+        process[indx].wt = process[indx].tat - process[indx].bt;
+        process[indx].completed = 1;
         completed++;
         avgtat += process[highest].tat;
         avgwt += process[ highest].wt;
 }
+else{
+    printf("IDLE\t");
+    time++;
 }
 printf("\n");
 printf("Process\tAT\tBT\tCT\tTAT\tWT\n");
