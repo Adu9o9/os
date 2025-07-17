@@ -1,0 +1,118 @@
+//sequential
+#include <stdio.h>
+void main(){
+int mem[100]={0},start,len,i,j,ch,file=0;
+do{
+file++;
+printf("\nEnter the starting block and length of the file %d: ",file);
+scanf("%d%d",&start,&len);
+ 
+
+int success=1;
+ 
+
+//now check if there are any occupied block in between. 1 means occupied else free
+for(i=start;i<start+len;i++){
+if(mem[i]==1){
+success=0;
+break;
+}
+}
+ //now if no blocks in between are occupied then success will be 1
+if(success){
+for(i=start;i<start+len;i++){
+mem[i]=1;
+}
+printf("File %d has been successfully allocated in blocks",file);
+for(i=start;i<start+len;i++){
+printf("%d ",i);
+}
+printf("\n");
+//printing status
+printf("Status: File-%d , Start-%d , Length-%d \n",file,start,len);
+ 
+
+}
+else{
+printf("File %d's allocation has failed.Some blocks are already occupied.\n",file);
+}
+printf("Press 1 to continue allocation, Press 0 to stop:");
+scanf("%d",&ch);
+}while(ch==1);
+ 
+
+}
+//indexed
+#include <stdio.h>
+
+void main() {
+    int mem[100] = {0}, indexBlock, n, blocks[50], i, ch, file = 0;
+    int fileIndex[20], fileBlocks[20]; // For tracking successful allocations
+
+    do {
+        file++;
+        printf("\nEnter the index block for file %d: ", file);
+    
+    // --- Correction for Index Block Error ---
+    getIndexBlock: // Label to jump back to
+        scanf("%d", &indexBlock);
+
+        // Check if index block is already allocated or invalid (basic check)
+        // Note: Without additional range checks (0-99), mem[indexBlock] can still crash if indexBlock is out of bounds.
+        if (indexBlock < 0 || indexBlock >= 100 || mem[indexBlock] == 1) { // Added basic range check
+            printf("Error: Index block %d is invalid or already allocated. Enter another index block: ", indexBlock);
+            goto getIndexBlock; // Go back and ask for input again
+        }
+
+        printf("Enter number of blocks needed by file %d: ", file);
+        scanf("%d", &n);
+
+        // Basic validation for n (as in previous discussions, this handles edge cases)
+        if (n <= 0 || n > 50) {
+            printf("Error: Number of blocks must be between 1 and 50. Allocation for File %d skipped.\n", file);
+            file--; // Do not count this attempt
+            continue; // Skip to next file allocation attempt
+        }
+
+        printf("Enter block numbers:\n");
+        for (i = 0; i < n; i++) {
+            // --- Correction for Data Block Error ---
+            getDataBlock: // Label to jump back to for individual data blocks
+            scanf("%d", &blocks[i]);
+
+            // Check if data block is invalid, already allocated, or same as index block
+            // Note: Without additional range checks (0-99), mem[blocks[i]] can still crash if blocks[i] is out of bounds.
+            if (blocks[i] < 0 || blocks[i] >= 100 || blocks[i] == indexBlock || mem[blocks[i]] == 1) { // Added basic range check
+                printf("Error: Block %d is invalid, already allocated, or is the index block. Enter another block: ", blocks[i]);
+                goto getDataBlock; // Go back and ask for this specific block again
+            }
+        }
+
+        // --- Allocation Logic (remains unchanged as input is now guaranteed to be valid) ---
+        mem[indexBlock] = 1; // Mark index block as occupied
+        for (i = 0; i < n; i++) {
+            mem[blocks[i]] = 1; // Mark data blocks as occupied
+        }
+
+        // Store for optional summary
+        // Note: fileIndex[file] and fileBlocks[file] will still cause an out-of-bounds error
+        // if 'file' reaches 20 or more.
+        if (file >= 0 && file < 20) { // Added a check to prevent array out-of-bounds for tracking arrays
+            fileIndex[file] = indexBlock;
+            fileBlocks[file] = n;
+        } else {
+            printf("Warning: Summary data for File %d might not be stored due to array size limits.\n", file);
+        }
+
+        printf("File %d allocated with index block %d pointing to blocks: ", file, indexBlock);
+        for (i = 0; i < n; i++)
+            printf("%d ", blocks[i]);
+        printf("\n");
+        printf("Status: File-%d   Index Block-%d   Length-%d\n", file, indexBlock, n);
+
+        // --- Continue/Stop Prompt ---
+        printf("Press 1 to continue allocation, Press 0 to stop: ");
+        scanf("%d", &ch);
+
+    } while (ch == 1);
+}
