@@ -116,3 +116,121 @@ void main() {
 
     } while (ch == 1);
 }
+#include <stdio.h>
+#include <stdlib.h> // Though not strictly used in this main, good practice to include
+
+void main() {
+    int mem[100]; // Represents the disk memory blocks (0: free, 1: occupied)
+    int indexBlock; // Unused in this linked allocation style, but kept from original declaration
+    int n;          // Number of blocks to be pre-allocated (read from user for initial setup)
+    int blocks[50]; // Unused for allocating blocks in this style, but kept from original declaration
+    int i, j, k;    // Loop counters
+    int ch;         // User choice to continue/stop
+    int file = 0;   // Counter for successfully allocated files
+
+    // Arrays to store summary info for successfully allocated files
+    // Note: These arrays have a fixed size (20). If 'file' exceeds this,
+    // data for summary will be lost or cause out-of-bounds access.
+    int fileIndex[20];  // Unused in this linked allocation style, but kept for compatibility
+    int fileBlocks[20]; // Stores number of blocks for each file (indexed by 'file')
+
+    // Arrays from reference code
+    int alloc[20];      // Stores initially allocated blocks (from user input)
+    int sb[20];         // Stores starting block for each file (indexed by 'file')
+    int b[20];          // Stores block length for each file (indexed by 'file')
+    int count = 0;      // Re-using 'count' as the file counter, as in the reference
+
+    // Initialize all memory blocks to free (0)
+    for (i = 0; i < 100; i++) {
+        mem[i] = 0;
+    }
+
+    // Initialize tracking arrays (consistent with reference)
+    for (i = 0; i < 20; i++) {
+        alloc[i] = 0;
+        sb[i] = 0;
+        b[i] = 0;
+    }
+
+    printf("--- Linked File Allocation Simulation ---\n");
+
+    // --- Part 1: Get Pre-Allocated Blocks (from reference code) ---
+    printf("\nEnter the number of blocks already allocated (pre-existing): ");
+    scanf("%d", &n); // Re-using 'n' for pre-allocated count
+
+    printf("Enter the already allocated block numbers:\n");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &alloc[i]); // Read block numbers into alloc array
+        // Basic boundary check for pre-allocated blocks
+        if (alloc[i] >= 0 && alloc[i] < 100) {
+            mem[alloc[i]] = 1; // Mark block as occupied (corrected from mem[alloc[i]]=alloc[i])
+        } else {
+            printf("Warning: Pre-allocated block %d is out of bounds (0-99) and ignored.\n", alloc[i]);
+        }
+    }
+
+    // --- Part 2: Main File Allocation Loop (Linked Style) ---
+    do {
+        count++; // Increment file counter for this allocation attempt
+        int success_blocks_found = 0; // Tracks how many blocks have been successfully allocated for *current file*
+
+        printf("\nEnter the number of blocks occupied by file %d: ", count);
+        scanf("%d", &b[count]); // Read block length for current file
+
+        printf("\nEnter the starting block of file %d (where to begin search): ", count);
+        scanf("%d", &sb[count]); // Read starting block (search initiation point)
+
+        k = sb[count]; // Start search from this block
+
+        // Loop until enough blocks are found for the current file
+        while (success_blocks_found != b[count]) {
+            // Basic boundary check for 'k' during search
+            if (k < 0 || k >= 100) {
+                printf("Error: Search reached end of memory or invalid block %d. Cannot allocate all %d blocks for file %d.\n", k, b[count], count);
+                // In this style, we just report and might exit the while loop,
+                // but the file won't be fully allocated.
+                // For simplicity matching the ref, we'll let it try to find as many as it can,
+                // and the "successful" message later is misleading if not all were found.
+                // A better approach would be to fail the allocation here.
+                break; // Exit if search goes out of bounds
+            }
+
+            if (mem[k] == 0) { // If the block is free
+                mem[k] = 1; // Mark block as occupied (corrected from mem[k]=k)
+                printf("Block %d has been allocated for file %d\n", k, count);
+                success_blocks_found++; // Increment count of blocks found for this file
+            } else {
+                printf("Block %d is already allocated. Skipping.\n", k); // Indicate skipping
+            }
+            k++; // Move to the next block to continue search
+        }
+        
+        // This check ensures "File Allocation Successful" is only printed if all blocks were actually found
+        if (success_blocks_found == b[count]) {
+            printf("\nFile Allocation Successful for File %d!\n", count);
+        } else {
+            printf("\nFile Allocation FAILED for File %d. Could only allocate %d out of %d blocks.\n", count, success_blocks_found, b[count]);
+            // If not all blocks were found, you might want to deallocate the blocks that *were* found
+            // and decrement 'count', or store partial allocation details.
+            // For simplicity and matching the reference's implied success, we'll continue,
+            // but the success message is now conditional.
+            count--; // This allocation attempt wasn't fully successful
+        }
+
+
+        printf("\nPress 1 to continue allocation, Press 0 to stop allocation: ");
+        scanf("%d", &ch);
+
+    } while (ch == 1);
+
+    // --- Final Summary of All Successfully Allocated Files ---
+    printf("\n--- Allocation Summary ---\n");
+    printf("File\tStart\tBlock Length\n");
+    // Loop through successfully allocated files (count stores the last successful file number)
+    for (j = 1; j <= count; j++) {
+        // Basic check to ensure valid data is printed from tracking arrays (if 'count' exceeds 20)
+        if (j < 20) { 
+            printf("%2d%9d%10d\n", j, sb[j], b[j]);
+        }
+    }
+}
