@@ -304,3 +304,110 @@ printf("Average Waiting Time: %f\n", avgwt / n);
 
 return 0;
 }
+//rr
+#include <stdio.h>
+#include <limits.h>
+#define MAX 10
+typedef struct Process{
+    int name;
+    int at;
+    int bt;
+    int rt;
+    int ct;
+    int tat;
+    int wt;
+    int status;
+}P;
+P queue[MAX];
+int front=0,rear=-1;
+int isEmpty(){
+    return front > rear;
+}
+void enqueue(P process){
+    if(rear<MAX -1){
+        queue[++rear]=process;
+    }
+    else
+    {
+        printf("Queue is full\n");
+    }
+}
+P dequeue(){
+    if(!isEmpty()){
+        return queue[front++];
+    }
+    else{
+        P dummy={-1,-1,-1,-1,-1,-1,-1};
+        return dummy;
+    }
+}
+int main(){
+    P process[]={
+        {1,0,8,8,0,0,0,0},
+        {2,5,2,2,0,0,0,0},
+        {3,1,7,7,0,0,0,0},
+        {4,6,3,3,0,0,0,0},
+        {5,8,5,5,0,0,0,0}
+    };
+    int n= sizeof(process)/sizeof(process[0]);
+    int quantum=3;
+    int time=0,completed=0;
+    float avgtat=0.0,avgwt=0.0;
+    enqueue(process[0]);
+    process[0].status=1;
+    printf("Gantt chart:");
+    while(completed<n){
+        if(!isEmpty()){
+        P currentpro=dequeue();
+        int exectime=(currentpro.rt<quantum)?currentpro.rt:quantum;
+        currentpro.rt-=exectime;
+        time+=exectime;
+        for(int i =0;i<n;i++){//enqueue newly arrived proceess
+            if(process[i].at<=time && !process[i].status){
+                enqueue(process[i]);
+                process[i].status=1;
+            }
+        }
+        printf("P%d\t%d",currentpro.name,time);
+        if(currentpro.rt==0){//process completed
+            completed++;
+            for(int i=0;i<n;i++){
+                if(process[i].name==currentpro.name){
+                    process[i].ct=time;
+                    process[i].rt = 0;
+                    break;
+                }
+            }
+        }
+        else{//re-enqueue and update original process
+            for (int i = 0; i < n;i++){
+                if(process[i].name==currentpro.name){
+                    process[i].rt=currentpro.rt;
+                    enqueue(currentpro);
+                    break;
+                }
+            }
+               
+        }
+    }
+    else{
+        time++;//idle 
+    }
+    }
+       
+        
+    printf("\n");
+    printf("Process\tPRI\tAT\tBT\tCT\tTAT\tWT\n");
+    for(int i=0;i<n;i++){
+        process[i].tat = process[i].ct - process[i].at;
+        process[i].wt = process[i].tat - process[i].bt;
+        avgtat += process[i].tat;
+        avgwt += process[i].wt;
+        printf("P%d\t\t%d\t%d\t%d\t%d\t%d\t\n",process[i].name,process[i].at,process[i].bt,process[i].ct,process[i].tat,process[i].wt);
+        
+    }
+    printf("Averagae turnaround time=%.2f",avgtat/n);
+    printf("Average waiting time=%.2f",avgwt/n);
+    
+    return 0;
+}
